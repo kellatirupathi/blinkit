@@ -1,25 +1,54 @@
-import logo from './logo.svg';
+// src/App.js
+import React, { useEffect, useState } from 'react';
+import { auth } from './firebase';
+import SignUp from './SignUp';
+import Login from './Login';
+import ImageUpload from './ImageUpload';
 import './App.css';
+import Navbar from './Navbar';
+import ImageList from './ImageList';
 
-function App() {
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [showImageUpload, setShowImageUpload] = useState(true);
+  const [showSignUp, setShowSignUp] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      setUser(authUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const toggleView = () => {
+    setShowImageUpload((prev) => !prev);
+  };
+
+  const toggleForm = () => {
+    setShowSignUp((prev) => !prev);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {user ? (
+        <div className="app-container">
+          <Navbar user={user} />
+          <div className="content-container">
+            <button onClick={toggleView} style={{ width: '150px' }}>{showImageUpload ? 'Saved Images' : 'Upload Image'}</button>
+            {showImageUpload ? <ImageUpload /> : <ImageList />}
+          </div>
+        </div>
+      ) : (
+        <div className="login-signup-container">
+          <div className="login-signup-wrapper">
+            {showSignUp ? <SignUp toggleForm={toggleForm} /> : <Login toggleForm={toggleForm} />}
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default App;
+
